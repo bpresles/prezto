@@ -11,3 +11,8 @@ if [[ -s "${ZDOTDIR:-$HOME}/.zprezto/init.zsh" ]]; then
 fi
 
 # Customize to your needs...
+
+# I've copied my aliases from ohmyzsh, need to check for overlaps with those defined by prezto
+if [[ -s "${ZDOTDIR:-$HOME}/.zprezto/aliases.zsh" ]]; then
+  source "${ZDOTDIR:-$HOME}/.zprezto/aliases.zsh"
+fi
