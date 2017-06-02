@@ -35,6 +35,8 @@ SEGMENT_SEPARATOR="\ue0b0"
 PLUSMINUS="\u00b1"
 BRANCH="\ue0a0"
 DETACHED="\u27a6"
+AHEAD="↑"
+BEHIND="↓"
 CROSS="\u2718"
 LIGHTNING="\u26a1"
 GEAR="\u2699"
@@ -88,7 +90,9 @@ prompt_user() {
 
 # Git: branch/detached head, dirty status
 prompt_git() {
-  local color ref
+  local color ref git_status
+  local git_status_flags=('--porcelain --ignore-submodules')
+
   is_dirty() {
     test -n "$(git status --porcelain --ignore-submodules)"
   }
@@ -106,6 +110,13 @@ prompt_git() {
     else
       ref="$DETACHED ${ref/.../}"
     fi
+    
+    git_status=$(command git status ${git_status_flags} 2> /dev/null | tail -n1)
+    local ahead_re='.+ahead ([0-9]+).+'
+    local behind_re='.+behind ([0-9]+).+'
+    [[ "${git_status}" =~ '${ahead_re}' ]] && ref+=" ${AHEAD}$match[1]"
+    [[ "${git_status}" =~ '${behind_re}' ]] && ref+=" ${BEHIND}$match[1]"
+    
     prompt_segment $color $PRIMARY_FG
     print -Pn " $ref"
   fi
