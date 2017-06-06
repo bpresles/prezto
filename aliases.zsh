@@ -118,14 +118,9 @@ alias tg='todoapp.sh -d ~/ ' # global todo general, like learnings
 # open last file ?
 #alias lvim='vim -c "normal '\''0"'
 
-# editors : elvis - fast vi, zile - tiny emacs
-alias e='elvis'
-alias m='most'
-#alias z='zile'
 alias notes='appenddiary.sh NOTES'
 # so common modules can be placed here and called from anywhere witohout having to specify -I each time
 export RUBYLIB=~/work/projects/rbcurse-core/lib
-export MANPAGER='most'
 #[[ -s $HOME/.rvm/scripts/rvm ]] && source $HOME/.rvm/scripts/rvm
 alias mdf='mdfind -name'
 #source ~/bin/z.sh # http://github.com/rupa/z/blob/master/z.sh directory jumper

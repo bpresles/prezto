@@ -95,10 +95,59 @@ prompt_git() {
   is_dirty() {
     test -n "$(git status --porcelain --ignore-submodules)"
   }
+
+  git_status_summary() {
+    awk '
+    BEGIN {
+      untracked=0;
+      unstaged=0;
+      staged=0;
+    }
+    {
+      if (!after_first && $0 ~ /^##.+/) {
+        print $0
+        seen_header = 1
+      } else if ($0 ~ /^\?\? .+/) {
+        untracked += 1
+      } else {
+        if ($0 ~ /^.[^ ] .+/) {
+          unstaged += 1
+        }
+        if ($0 ~ /^[^ ]. .+/) {
+          staged += 1
+        }
+      }
+      after_first = 1
+    }
+    END {
+      if (!seen_header) {
+        print
+      }
+      print untracked "\t" unstaged "\t" staged
+    }'
+  }
+  
   ref="$vcs_info_msg_0_"
+
+  local status_lines=$((git status --porcelain -b 2> /dev/null ||
+                        git status --porcelain 2> /dev/null) | git_status_summary)
+
+  local git_status=$(awk 'NR==1' <<< "$status_lines")
+  local counts=$(awk 'NR==2' <<< "$status_lines")
+
+  IFS=$'\t' read untracked_count unstaged_count staged_count <<< "$counts"
+
   if [[ -n "$ref" ]]; then
     if is_dirty; then
-      color=yellow
+      
+      if [[ $untracked_count -gt 0 ]]; then 
+      	color=red
+      elif [[ $unstaged_count -gt 0 ]]; then
+      	color=yellow
+      else
+      	color=cyan
+      fi
+
       ref="${ref} $PLUSMINUS"
     else
       color=green
@@ -110,8 +159,6 @@ prompt_git() {
       ref="$DETACHED ${ref/.../}"
     fi
     
-    git_status_full=$(git status --porcelain --ignore-submodules -b 2> /dev/null)
-    git_status=$(awk 'NR==1' <<< $git_status_full)
     local ahead_re='.+ahead ([0-9]+).+'
     local behind_re='.+behind ([0-9]+).+'
     [[ $git_status =~ $ahead_re ]] && ref+=" ${AHEAD}$match[1]"
