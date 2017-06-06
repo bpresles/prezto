@@ -139,20 +139,23 @@ prompt_git() {
 
   if [[ -n "$ref" ]]; then
     if is_dirty; then
-      
-      if [[ $untracked_count -gt 0 ]]; then 
-      	color=red
-      elif [[ $unstaged_count -gt 0 ]]; then
-      	color=yellow
-      else
-      	color=cyan
-      fi
-
       ref="${ref} $PLUSMINUS"
+
+      if [[ $untracked_count -gt 0 ]]; then
+        color=red
+        ref+=" ?:${untracked_count}"
+      elif [[ $unstaged_count -gt 0 ]]; then
+        color=yellow
+	ref+=" U:${unstaged_count}"
+      else
+        color=cyan
+	ref+=" S:${staged_count}"
+      fi
     else
       color=green
       ref="${ref} "
     fi
+
     if [[ "${ref/.../}" == "$ref" ]]; then
       ref="$BRANCH $ref"
     else
