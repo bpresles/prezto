@@ -27,11 +27,12 @@
 
 CURRENT_BG='NONE'
 if [[ -z "$PRIMARY_FG" ]]; then
-	PRIMARY_FG=black
+	PRIMARY_FG=white
 fi
 
 # Characters
 SEGMENT_SEPARATOR="\ue0b0"
+SEGMENT_SEPARATOR_REVERSE=""
 PLUSMINUS="\u00b1"
 BRANCH="\ue0a0"
 DETACHED="\u27a6"
@@ -57,6 +58,19 @@ prompt_segment() {
   [[ -n $3 ]] && print -n $3
 }
 
+#prompt_segment_right() {
+#  local bg fg
+#  [[ -n $1 ]] && bg="%K{$1}" || bg="%k"
+#  [[ -n $2 ]] && fg="%F{$2}" || fg="%f"
+#  if [[ $CURRENT_BG != 'NONE' && $1 != $CURRENT_BG ]]; then
+#    print -n "%{$bg%F{$CURRENT_BG}%}$SEGMENT_SEPARATOR_REVERSE%{$fg%}"
+#  else
+#    print -n "%{$bg%}%{$fg%}"
+#  fi
+#  CURRENT_BG=$1
+#  [[ -n $3 ]] && print -n $3
+#}
+
 # End the prompt, closing any open segments
 prompt_end() {
   if [[ -n $CURRENT_BG ]]; then
@@ -74,23 +88,25 @@ prompt_end() {
 # Context: user@hostname (who am I and where am I)
 prompt_context() {
   local user=`whoami`
+  color=white
 
   if [[ "$user" != "$DEFAULT_USER" || -n "$SSH_CONNECTION" ]]; then
-    prompt_segment $PRIMARY_FG default " %(!.%{%F{yellow}%}.)$user@%m "
+    prompt_segment $color black " %(!.%{%F{yellow}%}.)$user@%m "
   fi
 }
 
 prompt_user() {
   local user=`whoami`
-  
+  color=white
+ 
   if [[ "$user" != "$DEFAULT_USER" || -n "$SSH_CONNECTION" ]]; then
-    prompt_segment $PRIMARY_FG default " %(!.%{%F{yellow}%}.)$user "
+    prompt_segment $color black " %(!.%{%F{yellow}%}.)$user "
   fi
 }
 
 # Git: branch/detached head, dirty status
 prompt_git() {
-  local color ref git_status_full git_status
+  local fg_color color ref git_status_full git_status
 
   is_dirty() {
     test -n "$(git status --porcelain --ignore-submodules)"
@@ -134,6 +150,7 @@ prompt_git() {
 
   local git_status=$(awk 'NR==1' <<< "$status_lines")
   local counts=$(awk 'NR==2' <<< "$status_lines")
+  local fg_color=$PRIMARY_FG
 
   IFS=$'\t' read untracked_count unstaged_count staged_count <<< "$counts"
 
@@ -143,16 +160,20 @@ prompt_git() {
 
       if [[ $untracked_count -gt 0 ]]; then
         color=red
+	fb_color=white
         ref+=" ?:${untracked_count}"
       elif [[ $unstaged_count -gt 0 ]]; then
         color=yellow
+	fg_color=black
 	ref+=" U:${unstaged_count}"
       else
         color=cyan
+	fg_color=black
 	ref+=" S:${staged_count}"
       fi
     else
       color=green
+      fg_color=black
       ref="${ref} "
     fi
 
@@ -167,7 +188,7 @@ prompt_git() {
     [[ $git_status =~ $ahead_re ]] && ref+=" ${AHEAD}$match[1]"
     [[ $git_status =~ $behind_re ]] && ref+=" ${BEHIND}$match[1]"
     
-    prompt_segment $color $PRIMARY_FG
+    prompt_segment $color $fg_color
     print -Pn " $ref"
   fi
 }
@@ -206,7 +227,9 @@ prompt_virtualenv() {
 }
 
 prompt_time() {
-  print "%F{white}[%D{%H:%M:%S}]" 
+   color=blue
+   prompt_segment $color $PRIMARY_FG
+   print -Pn "[%D{%H:%M:%S}]" 
 }
 
 ## Main prompt
