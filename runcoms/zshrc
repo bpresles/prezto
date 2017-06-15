@@ -16,3 +16,12 @@ fi
 if [[ -s "${ZDOTDIR:-$HOME}/.zprezto/aliases.zsh" ]]; then
   source "${ZDOTDIR:-$HOME}/.zprezto/aliases.zsh"
 fi
+
+_have () 
+{ 
+    PATH=$PATH:/usr/sbin:/sbin:/usr/local/sbin type $1 &> /dev/null
+}
+autoload -U bashcompinit
+bashcompinit
+
+source /usr/share/bash-completion/completions/lxc
