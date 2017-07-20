@@ -106,7 +106,7 @@ prompt_user() {
 
 # Git: branch/detached head, dirty status
 prompt_git() {
-  local fg_color color ref git_status_full git_status
+  local fg_color color ref git_status_full git_status counts status_lines
 
   is_dirty() {
     test -n "$(git status --porcelain --ignore-submodules)"
@@ -145,12 +145,12 @@ prompt_git() {
   
   ref="$vcs_info_msg_0_"
 
-  local status_lines=$((git status --porcelain -b 2> /dev/null ||
+  status_lines=$((git status --porcelain -b 2> /dev/null ||
                         git status --porcelain 2> /dev/null) | git_status_summary)
 
-  local git_status=$(awk 'NR==1' <<< "$status_lines")
-  local counts=$(awk 'NR==2' <<< "$status_lines")
-  local fg_color=$PRIMARY_FG
+  git_status=$(awk 'NR==1' <<< "$status_lines")
+  counts=$(awk 'NR==2' <<< "$status_lines")
+  fg_color=$PRIMARY_FG
 
   IFS=$'\t' read untracked_count unstaged_count staged_count <<< "$counts"
 
